@@ -5,7 +5,8 @@ from gb_pymulator.display import Display
 from gb_pymulator.joypad import JoyPad
 from gb_pymulator import logger
 from gb_pymulator.timer import Timer
-
+from gb_pymulator.apu import APU
+from gb_pymulator.io_registers import IO_Registers
 
 class Memory:
 
@@ -24,7 +25,7 @@ class Memory:
         self._display = display
         self._cartridge = cartridge
         self._joypad = joypad
-
+        self.apu = APU(True)
     def write(self, address, value):
 
         if address < 0:
@@ -58,8 +59,8 @@ class Memory:
             self._timer.write(address, value)
         elif address == 0xFF0F:
             self.IF_flag = value
-        elif 0xFF10 <= address <= 0xFF26:
-            pass
+        elif 0xFF10 <= address <= 0xFF3F:
+            self.apu.write_register(address, value)
             # info("Writing to sound register")
         elif 0xFF30 <= address <= 0xFF3F:
             pass
@@ -114,9 +115,11 @@ class Memory:
             return self._timer.read(address)
         elif address == 0xFF0F:
             return self.IF_flag
-        elif 0xFF10 <= address <= 0xFF26:
+        elif 0xFF10 <= address <= 0xFF3F:
             # info(f"Reading from sound register {hex(address)}")
-            return 0
+            self.apu.read_register(address & 0xff)
+            self.apu.step(4)
+            return IO_Registers.read_value(address) & 0xff
         elif 0xFF40 <= address <= 0xFF4B:
             return self._display.read_reg(address)
         elif 0xFF80 <= address < 0xFFFF:
