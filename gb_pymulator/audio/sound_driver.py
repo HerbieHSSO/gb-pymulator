@@ -17,7 +17,7 @@ class SoundDriver():
 
     def __init__(self):
         self.sample_rate = 22050
-        self.buffer = np.array([0]*SoundDriver.BUFFER_SIZE)
+        self.buffer = np.array([0xFF] * 16).tobytes()
         self.ticks = 0
         self.div = SoundDriver.TICKS_PER_SEC // (self.sample_rate )
         self.i = 0
@@ -35,20 +35,20 @@ class SoundDriver():
 
         if left:
             self.has_sound = True
-        self.i += 2
-        self.buffer[self.i] = left
-        self.i += 2
-        self.buffer[self.i+1] = right
+        #self.i += 1
+        #self.buffer[self.i] = left
+        #self.i += 2
+        #self.buffer[self.i+1] = right
         
         
         #if self.i >= SoundDriver.BUFFER_SIZE:
             #if self.has_sound:
         threading.Thread(target=self.play_sound, args=(self.buffer,)).start()
             #self.i = 0
-        self.has_sound = False
+        #self.has_sound = False
 
     def stop(self):
-        self.buffer = np.array([0]*4096, dtype=np.float32)
+        self.buffer = np.array([0]*2048, dtype=np.float32)
         if self.play_obj is not None:
             try:
                 self.play_obj.stop()
